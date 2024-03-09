@@ -1,4 +1,7 @@
-on:
+name: Deploy Static website using S3
+
+n:
+
     push:
       branches:
         - jaiye/gitactions-s3
