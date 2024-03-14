@@ -33,6 +33,6 @@ jobs:
             script: |
               docker stop ben10 || true
               docker rm ben10 || true
-              docker pull ${{ secrets.JAIYE_USERNAME }}/ben10:lastest
+              docker pull ${{ secrets.JAIYE_USERNAME }}/ben10:latest
               docker run -d --name ben10 -p 80:80 ${{ secrets.JAIYE_USERNAME }}/ben10:lastest
               
