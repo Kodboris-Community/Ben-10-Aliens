@@ -19,6 +19,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
+          file: ben10file
           context: .
           push: true
           tags: kingjaiye/ben10:latest
