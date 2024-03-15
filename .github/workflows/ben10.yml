@@ -1,0 +1,28 @@
+name: Docker Build and Push
+
+on:
+  push:
+    branches:
+      - taiwo/ben10
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+     - name: Checkout code
+       uses: actions/checkout@v2
+            
+     - name: Build Docker image
+       run: docker build -t box
+             
+     - name: Login to the EC2 Instance
+       uses: appleboy/ssh-action@v1.0.3
+       with:
+          host: ${{ secrets.TEEWAI_HOST }}
+          username: ${{ secrets.TEEWAI_USERNAME }}
+          key: ${{ secrets.TEEWAI_KEY }}
+          port: ${{ secrets.PORT }}
+          script:
+            docker stop box
+            docker run -d -p 8080:80 box
