@@ -35,5 +35,7 @@ jobs:
           key: ${{ secrets.TEEWAI_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            docker stop ben10box
-            docker run -d -p 8080:80 ben10box 
+            docker stop ben10box || true
+            docker rm ben10box || true
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ben10box:latest
+            docker run -d --name ben10 -p 2000:80 ${{ secrets.DOCKERHUB_USERNAME }}/ben10box:latest
