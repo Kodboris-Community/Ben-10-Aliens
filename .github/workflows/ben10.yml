@@ -10,22 +10,25 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-     - name: Checkout code
-       uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
             
-     - name: Build Docker image
-       run: docker build -t box .
+      - name: Build Docker image
+        run: docker build. -t  ben10dok
              
-     - name: Push Docker image to Docker Hub
-       run: docker push teewaidock/box
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+      - name: Push Docker image to Docker Hub
+        run: docker push your_docker_image_name
        
-     - name: Login to the EC2 Instance
-       uses: appleboy/ssh-action@v1.0.3
-       with:
+      - name: Login to the EC2 Instance
+        uses: appleboy/ssh-action@v1.0.3
+        with:
           host: ${{ secrets.TEEWAI_HOST }}
           username: ${{ secrets.TEEWAI_USERNAME }}
           key: ${{ secrets.TEEWAI_KEY }}
           port: ${{ secrets.PORT }}
-          script:
-            docker stop box
-            docker run -d -p 8080:80 teewaidock/box
+          script: |
+            docker stop ben10dok
+            docker run -d -p 8080:80 your_docker_image_name
