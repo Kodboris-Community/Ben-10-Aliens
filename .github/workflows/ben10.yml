@@ -22,10 +22,10 @@ jobs:
       - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
-          file: ben10file
+          file: Dockerfile
           context: .
           push: true
-          tags: taiwo/ben10box:latest
+          tags: teewaidock/box:latest
 
       - name: Login to the EC2 Instance
         uses: appleboy/ssh-action@v1.0.3
@@ -35,7 +35,7 @@ jobs:
           key: ${{ secrets.TEEWAI_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            docker stop ben10box || true
-            docker rm ben10box || true
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ben10box:latest
-            docker run -d --name ben10 -p 2000:80 ${{ secrets.DOCKERHUB_USERNAME }}/ben10box:latest
+            docker stop jump || true
+            docker rm jump || true
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/box:latest
+            docker run -d --name jump -p 2000:80 ${{ secrets.DOCKERHUB_USERNAME }}/box:latest
