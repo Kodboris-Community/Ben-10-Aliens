@@ -16,7 +16,7 @@ jobs:
           username: ${{ secrets.JAIYE_USERNAME }}
           password: ${{ secrets.JAIYE_PASSWORD }}
 
-      - name: Build and push
+      - name: Build and push image
         uses: docker/build-push-action@v5
         with:
           file: ben10file
