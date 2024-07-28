@@ -1,4 +1,4 @@
-name: Docker CI/CD Pipeline
+name: Docker CI/CD Pipeline and AWS Balancer
 on:
   push:
     branches:
