@@ -22,7 +22,7 @@ jobs:
           file: ben10file
           context: .
           push: true
-          tags: kingjaiye/ben10:latest
+          tags: kingjaiye/ben10:${{ github.run_id }}
       - name: Login to the EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -33,6 +33,6 @@ jobs:
             script: |
               docker stop ben10 || true
               docker rm ben10 || true
-              docker pull ${{ secrets.JAIYE_USERNAME }}/ben10:latest
-              sudo docker run -d --name ben10 -p 80:80 ${{ secrets.JAIYE_USERNAME }}/ben10:latest
+              docker pull ${{ secrets.JAIYE_USERNAME }}/ben10:${{ github.run_id }}
+              docker run -d --name ben10 -p 80:80 ${{ secrets.JAIYE_USERNAME }}/ben10:${{ github.run_id }}
               
