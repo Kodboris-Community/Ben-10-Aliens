@@ -16,14 +16,14 @@ jobs:
           username: ${{ secrets.JAIYE_USERNAME }}
           password: ${{ secrets.JAIYE_PASSWORD }}
 
-      - name: Build and push image
+      - name: Build and push images
         uses: docker/build-push-action@v5
         with:
           file: ben10file
           context: .
           push: true
           tags: kingjaiye/ben10:${{ github.run_id }}
-      - name: Login to the EC2
+      - name: Login to the EC2s
         uses: appleboy/ssh-action@v1.0.3
         with:
             host: ${{ secrets.JAIYE_HOST }}
