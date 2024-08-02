@@ -1,4 +1,4 @@
-name: Docker CI/CD Pipeline and AWS Balancer
+name: CI/CD Pipeline and AWS Balancer
 on:
   push:
     branches:
@@ -7,6 +7,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Set Workflow ID as Environment Variable
         run: echo "WORKFLOW_ID=${{ github.run_id }}" >> $GITHUB_ENV
 
@@ -23,4 +26,3 @@ jobs:
               cd ben10
               git pull origin jaiye/gitaction-s3
               docker compose up --detach --build
-              
