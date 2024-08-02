@@ -3,7 +3,6 @@ services:
    build:
     context: .
     dockerfile: ben10file
-   image: ben10:latest
+   image: kingjaiye/ben10:${WORKFLOW_ID}
    ports:
       - 80:80
-  

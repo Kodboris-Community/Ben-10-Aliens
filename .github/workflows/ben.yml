@@ -7,6 +7,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Set Workflow ID as Environment Variable
+        run: echo "WORKFLOW_ID=${{ github.run_id }}" >> $GITHUB_ENV
+
       - name: Login to the EC2s
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -15,6 +18,8 @@ jobs:
             key: ${{ secrets.JAIYE_KEY }}
             port: ${{ secrets.PORT }}
             script: |
+              echo "WORKFLOW_ID=${{ github.run_id }}" | sudo tee -a /etc/environment
+              source /etc/environment
               cd ben10
               git pull origin jaiye/gitaction-s3
               docker compose up --detach --build
