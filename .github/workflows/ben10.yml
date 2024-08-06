@@ -17,4 +17,4 @@ jobs:
             script: |        
               cd ben10
               git pull origin taiwo/ben10
-              docker compose up -d --build
+              docker compose up --detach --build
