@@ -20,14 +20,15 @@ jobs:
         run: |
           docker pull teewaidock/ben10:latest
 
-      - name: Login to the EC2
+      - name: Login to the EC2s
         uses: appleboy/ssh-action@v1.0.3
         with:
             host: ${{ secrets.TEEWAI_HOST }}
             username: ${{ secrets.TEEWAI_USERNAME }}
             key: ${{ secrets.TEEWAI_KEY }}
             port: ${{ secrets.PORT }}
-            script: |        
+            script: | 
+              sudo apt update     
               docker stop ben10
               docker pull teewaidock/ben10:latest
               docker run -d -p 80:80 teewaidock/ben10:latest
