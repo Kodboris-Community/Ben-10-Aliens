@@ -1,41 +1,20 @@
-name: Docker Build and Push
-
+name: CI/CD Pipeline and AWS Balancer
 on:
   push:
     branches:
       - taiwo/ben10
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build Docker image
-        uses: docker/build-push-action@v5
-        with:
-          file: Dockerfile
-          context: .
-          push: true
-          tags: teewaidock/box:latest
-
-      - name: Login to the EC2 Instance
+      - name: Login to the EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.TEEWAI_HOST }}
-          username: ${{ secrets.TEEWAI_USERNAME }}
-          key: ${{ secrets.TEEWAI_KEY }}
-          port: ${{ secrets.PORT }}
-          script: |
-            docker stop jump || true
-            docker rm jump || true
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/box:latest
-            docker run -d --name jump -p 2000:80 ${{ secrets.DOCKERHUB_USERNAME }}/box:latest
+            host: ${{ secrets.TEEWAI_HOST }}
+            username: ${{ secrets.TEEWAI_USERNAME }}
+            key: ${{ secrets.TEEWAI_KEY }}
+            port: ${{ secrets.PORT }}
+            script: |        
+              cd ben10
+              git pull origin taiwo/ben10
+              docker compose up -d --build
