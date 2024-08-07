@@ -44,7 +44,7 @@ jobs:
       COMPOSE: compose.yml
       ECR_REGISTRY: ${{vars.ECR_REGISTRY}}
     steps:
-    - name: ssh login to Primus EC2 Instance
+    - name: ssh login to Ben10 EC2 Instance
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.TEEWAI_HOST }}
