@@ -32,7 +32,7 @@ jobs:
         echo "$ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER}"
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER} .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER}
-        echo "ECR_REGISTRY=$ECR_REGISTRY" >> ecr_registry.txt
+        echo "$ECR_REGISTRY" > ecr_registry.txt
     - name: Upload ECR Registry
       uses: actions/upload-artifact@v2
       with:
@@ -47,7 +47,7 @@ jobs:
       ECR_REPOSITORY: ben10-account
       DIRECTORY: ben10
       COMPOSE: compose.yml
-
+      
     steps:
     - name: Download ECR Registry
       uses: actions/download-artifact@v2
@@ -57,6 +57,7 @@ jobs:
     - name: Read ECR Registry
       run: |
         ECR_REGISTRY=$(cat ecr_registry.txt)
+        echo "ECR_REGISTRY=$ECR_REGISTRY" >> $GITHUB_ENV
     - name: ssh login to Ben10 EC2 Instance
       uses: appleboy/ssh-action@v1.0.3
       with:
@@ -82,4 +83,3 @@ jobs:
           else
             echo "Error!!!!! can not recreate service update"
             exit 1
-
