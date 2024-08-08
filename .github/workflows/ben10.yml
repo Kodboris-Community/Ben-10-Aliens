@@ -52,6 +52,13 @@ jobs:
         port: ${{ secrets.PORT }}
         envs: GITHUB_TRIGGERING_ACTOR,GITHUB_RUN_NUMBER,ECR_REGISTRY,ECR_REPOSITORY,DIRECTORY,COMPOSE
         script: |
+          echo "Environment Variables:"
+          echo "GITHUB_TRIGGERING_ACTOR: $GITHUB_TRIGGERING_ACTOR"
+          echo "GITHUB_RUN_NUMBER: $GITHUB_RUN_NUMBER"
+          echo "ECR_REGISTRY: $ECR_REGISTRY"
+          echo "ECR_REPOSITORY: $ECR_REPOSITORY"
+          echo "DIRECTORY: $DIRECTORY"
+          echo "COMPOSE: $COMPOSE"
           echo  "$GITHUB_TRIGGERING_ACTOR -Deployment Initiated- \nPulling build artifact $ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER}"
           cd $DIRECTORY && yq -y -i '.services.web.image = "${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_RUN_NUMBER}"' $COMPOSE && \
           docker compose up --build --force-recreate -d
