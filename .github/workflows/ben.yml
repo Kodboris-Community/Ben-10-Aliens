@@ -4,25 +4,68 @@ on:
     branches:
       - jaiye/gitaction-s3
 jobs:
-  deploy:
+  build:
+    name: Build Ben10 Image
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Check out code
+      uses: actions/checkout@v2
 
-      - name: Set Workflow ID as Environment Variable
-        run: echo "WORKFLOW_ID=${{ github.run_id }}" >> $GITHUB_ENV
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.JAIYE_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.JAIYE_AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
 
-      - name: Login to the EC2
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-            host: ${{ secrets.JAIYE_HOST }}
-            username: ${{ secrets.VICTOR_USERNAME }}
-            key: ${{ secrets.JAIYE_KEY }}
-            port: ${{ secrets.PORT }}
-            script: |
-              echo "WORKFLOW_ID=${{ github.run_id }}" | sudo tee -a /etc/environment
-              source /etc/environment
-              cd ben10
-              git pull origin jaiye/gitaction-s3
-              docker compose up --detach --build
+    - name: Login to Ben10 ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ben10-account
+      run: |
+        echo "$ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER}"
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER} .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER}
+      outputs:
+        ecr_registry: ${{ env.ECR_REGISTRY }}
+
+  pilot-deploy:
+    name: Deploy Ben10 to dev
+    runs-on: ubuntu-latest
+    needs: build
+    env:
+      ECR_REPOSITORY: ben10-account
+      DIRECTORY: ben10
+      COMPOSE: compose.yml
+      ECR_REGISTRY: ${{ needs.build.outputs.ecr_registry }}
+    steps:
+    - name: ssh login to Ben10 EC2 Instance
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.JAIYE_HOST }}
+        username: ${{ secrets.VICTOR_USERNAME }}
+        key: ${{ secrets.JAIYE_KEY }}
+        port: ${{ secrets.PORT }}
+        envs: GITHUB_TRIGGERING_ACTOR,GITHUB_RUN_NUMBER,ECR_REGISTRY,ECR_REPOSITORY,DIRECTORY,COMPOSE
+        script: |
+          echo "Environment Variables:"
+          echo "GITHUB_TRIGGERING_ACTOR: $GITHUB_TRIGGERING_ACTOR"
+          echo "GITHUB_RUN_NUMBER: $GITHUB_RUN_NUMBER"
+          echo "ECR_REGISTRY: $ECR_REGISTRY"
+          echo "ECR_REPOSITORY: $ECR_REPOSITORY"
+          echo "DIRECTORY: $DIRECTORY"
+          echo "COMPOSE: $COMPOSE"
+          
+          echo  "$GITHUB_TRIGGERING_ACTOR -Deployment Initiated- \nPulling build artifact $ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER}"
+          cd $DIRECTORY && yq -y -i '.services.web.image = "${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_RUN_NUMBER}"' $COMPOSE && \
+          docker compose up --build --force-recreate -d
+          if [[ $? == 0 ]]; then
+            echo "Deployment Successful!!!"
+            else
+              echo "Error!!!!! can not recreate service update"
+              exit 1
+          fi
