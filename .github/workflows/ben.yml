@@ -49,10 +49,8 @@ jobs:
         username: ${{ secrets.VICTOR_USERNAME }}
         key: ${{ secrets.JAIYE_KEY }}
         port: ${{ secrets.PORT }}
-        envs: GITHUB_TRIGGERING_ACTOR,GITHUB_RUN_NUMBER,ECR_REGISTRY,ECR_REPOSITORY,DIRECTORY,COMPOSE
+        envs: GITHUB_TRIGGERING_ACTOR,GITHUB_RUN_NUMBER,ECR_REGISTRY:${{ steps.login-ecr.outputs.registry }},ECR_REPOSITORY,DIRECTORY,COMPOSE
         script: |
-          echo "ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}" | sudo tee -a /etc/environment
-          source /etc/environment
           echo "Environment Variables:"
           echo "GITHUB_TRIGGERING_ACTOR: $GITHUB_TRIGGERING_ACTOR"
           echo "GITHUB_RUN_NUMBER: $GITHUB_RUN_NUMBER"
