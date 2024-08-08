@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - jaiye/gitaction-s3
+
 jobs:
   build:
     name: Build Ben10 Image
@@ -23,25 +24,35 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
 
     - name: Build, tag, and push image to Amazon ECR
+      id: build-and-push
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: ben10-account
       run: |
         echo "$ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER}"
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER} .
-        docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_RUN_NUMBER}
-        echo "ECR_REGISTRY=$ECR_REGISTRY" >> $GITHUB_ENV
-
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER}
+        echo "ECR_REGISTRY=$ECR_REGISTRY" >> ecr_registry.txt
+    - name: Upload ECR Registry
+      uses: actions/upload-artifact@v2
+      with:
+        name: ecr-registry
+        path: ecr_registry.txt
+  
   pilot-deploy:
     name: Deploy Ben10 to dev
     runs-on: ubuntu-latest
     needs: build
-    env:
-      ECR_REPOSITORY: ben10-account
-      DIRECTORY: ben10
-      COMPOSE: compose.yml
-      
     steps:
+    - name: Download ECR Registry
+      uses: actions/download-artifact@v2
+      with:
+        name: ecr-registry
+        path: .
+    - name: Read ECR Registry
+      run: |
+        ECR_REGISTRY=$(cat ecr_registry.txt)
+        echo "ECR_REGISTRY=$ECR_REGISTRY" >> $GITHUB_ENV
     - name: ssh login to Ben10 EC2 Instance
       uses: appleboy/ssh-action@v1.0.3
       with:
@@ -49,7 +60,7 @@ jobs:
         username: ${{ secrets.VICTOR_USERNAME }}
         key: ${{ secrets.JAIYE_KEY }}
         port: ${{ secrets.PORT }}
-        envs: GITHUB_TRIGGERING_ACTOR,GITHUB_RUN_NUMBER,ECR_REGISTRY:${{ steps.login-ecr.outputs.registry }},ECR_REPOSITORY,DIRECTORY,COMPOSE
+        envs: GITHUB_TRIGGERING_ACTOR,GITHUB_RUN_NUMBER,ECR_REGISTRY,ECR_REPOSITORY,DIRECTORY,COMPOSE
         script: |
           echo "Environment Variables:"
           echo "GITHUB_TRIGGERING_ACTOR: $GITHUB_TRIGGERING_ACTOR"
@@ -58,14 +69,13 @@ jobs:
           echo "ECR_REPOSITORY: $ECR_REPOSITORY"
           echo "DIRECTORY: $DIRECTORY"
           echo "COMPOSE: $COMPOSE"
-
+          
           echo  "$GITHUB_TRIGGERING_ACTOR -Deployment Initiated- \nPulling build artifact $ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER}"
           cd $DIRECTORY && yq -y -i '.services.web.image = "${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_RUN_NUMBER}"' $COMPOSE && \
           docker compose up --build --force-recreate -d
           if [[ $? == 0 ]]; then
             echo "Deployment Successful!!!"
-            else
-              echo "Error!!!!! can not recreate service update"
-              exit 1
-          fi
+          else
+            echo "Error!!!!! can not recreate service update"
+            exit 1
 
