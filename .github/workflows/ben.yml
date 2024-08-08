@@ -59,7 +59,7 @@ jobs:
           echo "ECR_REPOSITORY: $ECR_REPOSITORY"
           echo "DIRECTORY: $DIRECTORY"
           echo "COMPOSE: $COMPOSE"
-          
+
           echo  "$GITHUB_TRIGGERING_ACTOR -Deployment Initiated- \nPulling build artifact $ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER}"
           cd $DIRECTORY && yq -y -i '.services.web.image = "${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_RUN_NUMBER}"' $COMPOSE && \
           docker compose up --build --force-recreate -d
@@ -68,4 +68,5 @@ jobs:
             else
               echo "Error!!!!! can not recreate service update"
               exit 1
-          fi
+          fi
+          
