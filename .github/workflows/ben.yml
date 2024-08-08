@@ -31,7 +31,7 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER} .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER}
     outputs:
-        ecr_registry: ${{ env.ECR_REGISTRY }}
+        ecr_registry: ${{ steps.login-ecr.outputs.registry }}
 
   pilot-deploy:
     name: Deploy Ben10 to dev
