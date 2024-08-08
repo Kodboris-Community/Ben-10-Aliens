@@ -32,26 +32,21 @@ jobs:
         echo "$ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER}"
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER} .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER}
-        echo "ECR_REGISTRY=$ECR_REGISTRY" >> ecr_registry.txt
-    - name: Upload ECR Registry
-      uses: actions/upload-artifact@v2
-      with:
-        name: ecr-registry
-        path: ecr_registry.txt
+        echo "ECR_REGISTRY=$ECR_REGISTRY" >> $GITHUB_ENV
   
   pilot-deploy:
     name: Deploy Ben10 to dev
     runs-on: ubuntu-latest
     needs: build
-    steps:
-    - name: Download ECR Registry
-      uses: actions/download-artifact@v2
-      with:
-        name: ecr-registry
-        path: .
-    - name: Read ECR Registry
+    env:
+       ECR_REPOSITORY: ben10-account
+       DIRECTORY: ben10
+       COMPOSE: compose.yaml
+    steps: 
+
+    - name: Read ECR Registry Env
       run: |
-        ECR_REGISTRY=$(cat ecr_registry.txt)
+        ECR_REGISTRY=$GITGUB_ENV
         echo "ECR_REGISTRY=$ECR_REGISTRY" >> $GITHUB_ENV
     - name: ssh login to Ben10 EC2 Instance
       uses: appleboy/ssh-action@v1.0.3
