@@ -54,7 +54,7 @@ jobs:
         script: |
           echo  "$GITHUB_TRIGGERING_ACTOR -Deployment Initiated- \nPulling build artifact $ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_RUN_NUMBER}"
           cd $DIRECTORY && yq -y -i '.services.web.image = "${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_RUN_NUMBER}"' $COMPOSE && \
-          docker-compose up --build --force-recreate -d
+          docker compose up --build --force-recreate -d
           if [[ $? == 0 ]]; then
             echo "Deployment Successful!!!"
             else
