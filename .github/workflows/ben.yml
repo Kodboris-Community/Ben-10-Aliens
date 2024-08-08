@@ -40,7 +40,7 @@ jobs:
       ECR_REPOSITORY: ben10-account
       DIRECTORY: ben10
       COMPOSE: compose.yml
-      ECR_REGISTRY: ${{ env.ECR_REGISTRY }}
+      
     steps:
     - name: ssh login to Ben10 EC2 Instance
       uses: appleboy/ssh-action@v1.0.3
